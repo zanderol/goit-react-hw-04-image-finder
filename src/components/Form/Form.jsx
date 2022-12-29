@@ -1,5 +1,7 @@
 import { Component } from 'react';
 
+import '../styles.css';
+
 export class Form extends Component {
   state = {
     query: '',
@@ -20,10 +22,27 @@ export class Form extends Component {
 
   render() {
     return (
-      <form onSubmit={this.onSubmitForm}>
-        <input type="text" name="" id="" onChange={this.setQuery} />
-        <button type="submit">Submit</button>
-      </form>
+      //   <form onSubmit={this.onSubmitForm}>
+      //     <input type="text" name="" id="" onChange={this.setQuery} />
+      //     <button type="submit">Submit</button>
+      //     </form>
+
+      <header className="Searchbar">
+        <form className="SearchForm" onSubmit={this.onSubmitForm}>
+          <button type="submit" className="SearchForm-button">
+            <span className="SearchForm-button-label">Search</span>
+          </button>
+
+          <input
+            className="SearchForm-input"
+            type="text"
+            autoComplete="off"
+            autoFocus
+            placeholder="Search images and photos"
+            onChange={this.setQuery}
+          />
+        </form>
+      </header>
     );
   }
 }
