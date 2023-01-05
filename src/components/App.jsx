@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { sendRequest } from '../service/apiService';
 import { GalleryList } from './GalleryList/GalleryList';
 import { Modal } from './Modal/Modal';
@@ -7,76 +7,65 @@ import { Form } from './Form/Form';
 
 import './styles.css';
 
-export class App extends Component {
-  state = {
-    query: '',
-    page: 1,
-    images: [],
-    showBtn: false,
-    largeImageURL: '',
-    isLoading: false,
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState('');
+  const [images, setImages] = useState([]);
+  const [showBtn, setBtn] = useState(false);
+  const [largeImageURL, setLargeImageURL] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!query) return;
+    setIsLoading(true);
+    sendRequest(query, page)
+      .then(data => {
+        setImages(prevState => [...prevState, ...data.hits]);
+        setBtn(page < Math.ceil(data.totalHits / 12));
+      })
+      .catch()
+      .finally(() => setIsLoading(false));
+  }, [query, page]);
+
+  const handleSubmit = query => {
+    setQuery(query);
+    setPage(1);
+    setImages([]);
+    setLargeImageURL('');
+    setBtn(false);
+    setIsLoading(false);
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      this.setState({ isLoading: true });
-      sendRequest(this.state.query, this.state.page)
-        .then(data => {
-          this.setState(prevState => {
-            return {
-              images: [...prevState.images, ...data.hits],
-              showBtn: this.state.page < Math.ceil(data.totalHits / 12),
-            };
-          });
-        })
-        .catch()
-        .finally(() => {
-          this.setState({ isLoading: false });
-        });
-    }
-  }
-
-  handleSubmit = query => {
-    this.setState({ query, images: [], page: 1 });
+  const incrementPage = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  incrementPage = () => {
-    this.setState(prevState => {
-      return { page: prevState.page + 1 };
-    });
+  const increasedLargeImageURL = largeImg => {
+    setLargeImageURL(largeImg);
   };
 
-  setLargeImageURL = largeImageURL => {
-    this.setState({ largeImageURL });
-  };
+  return (
+    <>
+      <Form handleSubmit={handleSubmit} />
+      {images.length > 0 && (
+        <GalleryList
+          images={images}
+          increasedLargeImageURL={increasedLargeImageURL}
+        />
+      )}
 
-  render() {
-    return (
-      <>
-        <Form handleSubmit={this.handleSubmit} />
-        {this.state.images.length > 0 && (
-          <GalleryList
-            images={this.state.images}
-            setLargeImageURL={this.setLargeImageURL}
-          />
-        )}
-
-        {this.state.showBtn && (
-          <button type="button" onClick={this.incrementPage} className="Button">
-            Load more
-          </button>
-        )}
-        {this.state.largeImageURL && (
-          <Modal
-            largeImageURL={this.state.largeImageURL}
-            setLargeImageURL={this.setLargeImageURL}
-          />
-        )}
-        {this.state.isLoading && <Loader />}
-      </>
-    );
-  }
-}
+      {showBtn && (
+        <button type="button" onClick={incrementPage} className="Button">
+          Load more
+        </button>
+      )}
+      {largeImageURL && (
+        <Modal
+          largeImageURL={largeImageURL}
+          increasedLargeImageURL={increasedLargeImageURL}
+        />
+      )}
+      {isLoading && <Loader />}
+    </>
+  );
+};

@@ -1,12 +1,12 @@
 import '../styles.css';
 
-export const GalleryList = ({ images, setLargeImageURL }) => {
+export const GalleryList = ({ images, increasedLargeImageURL }) => {
   return (
     <ul className="ImageGallery">
       {images.map(image => (
         <li
           key={image.id}
-          onClick={() => setLargeImageURL(image.largeImageURL)}
+          onClick={() => increasedLargeImageURL(image.largeImageURL)}
           className="ImageGalleryItem"
         >
           <img
